@@ -11,19 +11,19 @@ def getElevation(lat, lon):
 
     response = str(simplejson.load(urllib.urlopen(url)))
 
-    rx ='.*(elevations\': \[)(\d+).*'
+    rx = '.*(elevations\': \[)(\d+).*'
     match = re.match(rx, response)
 
     return match.group(2) + '.0'
 
 if __name__ == '__main__':
 
-    startLat = 49.119087
-    startLon = 19.963777
-    stopLat = 49.292461
-    stopLon = 20.249254
+    startLat = 49.15
+    startLon = 19.95
+    stopLat = 49.241
+    stopLon = 20.086
 
-    resolution = 400
+    resolution = 100
 
     latStep = (stopLat - startLat) / resolution
     lonStep = (stopLon - startLon) / resolution
@@ -37,11 +37,11 @@ if __name__ == '__main__':
                 lat = startLat + latStep * i
                 lon = startLon + lonStep * j
                 urlCoords = str(lat) + ',' + str(lon)
-                point = getElevation(lat,lon)
+                point = getElevation(lat, lon)
                 line = str(lon) + '\t' + str(lat) + '\t' + point + '\n'
                 print str(counter) + ' ' + line
                 file.write(line)
 
-        # with open('dataData.csv', 'w') as file:
-        #     for point in points:
-        #         file.write('%f\t%f\t%f\n' % (point['lng'], point['lat'], point['elevation']))
+                # with open('dataData.csv', 'w') as file:
+                #     for point in points:
+                #         file.write('%f\t%f\t%f\n' % (point['lng'], point['lat'], point['elevation']))
