@@ -6,9 +6,10 @@ import urllib
 
 ELEVATION_BASE_URL = 'https://maps.googleapis.com/maps/api/elevation/json?key=AIzaSyD2mGMrMAGeyASiBj8NT8eVQYfR2l7nZJk'
 
+
 def getElevation(path, **elvtn_args):
     elvtn_args.update({
-      'locations': path
+        'locations': path
     })
     url = ELEVATION_BASE_URL + '&' + urllib.urlencode(elvtn_args)
 
@@ -16,12 +17,12 @@ def getElevation(path, **elvtn_args):
     elevationArray = []
 
     for resultset in response['results']:
-      elevationArray.append({
-        'lat': resultset['location']['lat'],
-        'lng': resultset['location']['lng'],
-        'elevation': resultset['elevation'],
-        'resolution': resultset['resolution']
-      })
+        elevationArray.append({
+            'lat': resultset['location']['lat'],
+            'lng': resultset['location']['lng'],
+            'elevation': resultset['elevation'],
+            'resolution': resultset['resolution']
+        })
 
     return elevationArray
 
@@ -35,15 +36,15 @@ if __name__ == '__main__':
 
     resolution = 30
 
-    latStep = (stopLat - startLat)/resolution
-    lonStep =  (stopLon - startLon)/resolution
+    latStep = (stopLat - startLat) / resolution
+    lonStep = (stopLon - startLon) / resolution
 
     geoArray = []
     points = []
     for i in xrange(resolution):
-      for j in xrange(resolution):
-        points += getElevation('%f,%f' % (startLat + latStep * i, startLon + lonStep * j))
+        for j in xrange(resolution):
+            points += getElevation('%f,%f' % (startLat + latStep * i, startLon + lonStep * j))
 
     with open('data.csv', 'w') as file:
-      for point in points:
-        file.write('%f\t%f\t%f\t%f\n' % (point['lng'], point['lat'], point['elevation'], point['resolution']))
+        for point in points:
+            file.write('%f\t%f\t%f\t%f\n' % (point['lng'], point['lat'], point['elevation'], point['resolution']))

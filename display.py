@@ -9,6 +9,7 @@ x = []
 y = []
 z = []
 
+# with open('data.csv', 'r') as file:
 with open('dataData.csv', 'r') as file:
     for line in file.readlines():
         val = line.split('\t')
@@ -53,9 +54,15 @@ def generatePoints(start, end):
     points = [start, end]
     return points[:1] + zip(random.sample(x, randomPoints), random.sample(y, randomPoints)) + points[1:]
 
+# google data
+# start = (19.9, 49.12)
+# end = (20.0138, 49.1618)
 
-start = (19.9, 49.12)
-end = (20.0138, 49.1618)
+# bing data
+start = (19.96, 49.16)
+end = (20.085, 49.240)
+
+
 points = generatePoints(start, end)
 calculate_cost(points)
 
