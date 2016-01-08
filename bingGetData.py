@@ -23,14 +23,14 @@ if __name__ == '__main__':
     stopLat = 49.241
     stopLon = 20.086
 
-    resolution = 15
+    resolution = 30
 
     latStep = (stopLat - startLat) / resolution
     lonStep = (stopLon - startLon) / resolution
     counter = 0
     geoArray = []
     points = []
-    with open('data15.csv', 'w') as file:
+    with open('data30.csv', 'w') as file:
         for i in xrange(resolution):
             for j in xrange(resolution):
                 counter += 1

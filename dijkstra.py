@@ -1,5 +1,4 @@
 import sys
-from datetime import datetime
 
 class Vertex:
     def __init__(self, node, lat, lon, ele):
@@ -14,7 +13,7 @@ class Vertex:
         self.visited = False
         self.previous = None
 
-    def add_neighbor(self, neighbor, weight=0):
+    def add_neighbor(self, neighbor, weight=1):
         self.adjacent[neighbor] = weight
 
     def get_connections(self):
@@ -39,7 +38,7 @@ class Vertex:
         self.visited = True
 
     def __str__(self):
-        return str(self.id) + ' lat: ' + str(self.lat) + ' lon: ' + str(self.lon) + ' ele: ' + str(self.ele) + ' adjacent: ' + str([x.id for x in self.adjacent])
+        return str(self.id) + ' lat: ' + str(self.lat) + ' lon: ' + str(self.lon) + ' ele: ' + str(self.ele) + ' adjacent: ' + str(['('+str(x.id)+': '+str(self.get_weight(x))+')' for x in self.adjacent])
 
 class Graph:
     def __init__(self):
@@ -61,7 +60,7 @@ class Graph:
         else:
             return None
 
-    def add_edge(self, frm, to, cost = 0):
+    def add_edge(self, frm, to, cost = 1):
         if frm not in self.vert_dict:
             print 'There is no such /from/ vertice'
         if to not in self.vert_dict:
@@ -88,7 +87,7 @@ def shortest(v, path):
 import heapq
 
 def dijkstra(aGraph, start):
-    print '''Dijkstra's shortest path'''
+    print '''Dijkstra's shortest path begin...'''
     start.set_distance(0)
 
     unvisited_queue = [(v.get_distance(),v) for v in aGraph]
@@ -107,58 +106,16 @@ def dijkstra(aGraph, start):
             if new_dist < next.get_distance():
                 next.set_distance(new_dist)
                 next.set_previous(current)
-                print 'updated : current = %s next = %s new_dist = %s' \
-                        %(current.get_id(), next.get_id(), next.get_distance())
-            else:
-                print 'not updated : current = %s next = %s new_dist = %s' \
-                        %(current.get_id(), next.get_id(), next.get_distance())
+            #     print 'updated : current = %s next = %s new_dist = %s' \
+            #             %(current.get_id(), next.get_id(), next.get_distance())
+            # else:
+            #     print 'not updated : current = %s next = %s new_dist = %s' \
+            #             %(current.get_id(), next.get_id(), next.get_distance())
 
         while len(unvisited_queue):
             heapq.heappop(unvisited_queue)
         unvisited_queue = [(v.get_distance(),v) for v in aGraph if not v.visited]
         heapq.heapify(unvisited_queue)
+    print '''Dijkstra's shortest path done.'''
 
-def cost(frm, to):
-    return to
 
-if __name__ == '__main__':
-    start_time = datetime.now()
-
-    g = Graph()
-
-    with open('data10.csv', 'r') as file:
-        count = 0
-        for line in file.readlines():
-            val = line.split('\t')
-            g.add_vertex(count, float(val[0]),float(val[1]),float(val[2]))
-            count += 1
-
-    res = 10
-    # TODO calculate cost between two points
-
-    g.add_edge(0, 1, cost(0, 1))
-    for node in xrange(res**2 - 1):
-            if node >= res**2 - res:
-                g.add_edge(node, node+1, cost(node, node+1))
-            else:
-                g.add_edge(node, node + res, cost(node, node + res))
-                if node % res != (res-1):
-                    g.add_edge(node, node + 1, cost(node, node + 1))
-
-    start = 11
-    stop = 66
-
-    dijkstra(g, g.get_vertex(start))
-    target = g.get_vertex(stop)
-    path = [target.get_id()]
-    shortest(target, path)
-    print 'The shortest path : %s' % (path[::-1])
-
-    total_cost = 0
-    for x in xrange(len(path)-1):
-        total_cost += cost(x,x+1)
-
-    print 'total cost: ' + str(total_cost)
-
-    end_time = datetime.now()
-    print end_time - start_time

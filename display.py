@@ -54,6 +54,8 @@ def generatePoints(start, end):
     points = [start, end]
     return points[:1] + zip(random.sample(x, randomPoints), random.sample(y, randomPoints)) + points[1:]
 
+# TODO jak punkty sa zdefiniowane w ten sposob (czyt na odwrot (lon,lat) zamiast (lat,lon)) -> 'from geopy.distance import vincenty' bedzie zle przeliczalo odleglosci!
+
 # google data
 # start = (19.9, 49.12)
 # end = (20.0138, 49.1618)
@@ -61,7 +63,8 @@ def generatePoints(start, end):
 # bing data
 start = (19.96, 49.16)
 end = (20.085, 49.240)
-
+start = (19.96, 49.16)
+end = (20.085, 49.240)
 
 points = generatePoints(start, end)
 calculate_cost(points)
@@ -102,6 +105,6 @@ while i < iter_max:
 xx, yy = zip(*points)
 plt.imshow(zi, vmin=z.min(), vmax=z.max(), origin='lower',
            extent=[x.min(), x.max(), y.min(), y.max()], cmap='terrain')
-plt.plot(xx, yy, color='red', lw=2, marker='o')
+plt.w(xx, yy, color='red', lw=2, marker='o')
 plt.colorbar()
 plt.show()
