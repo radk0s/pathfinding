@@ -1,5 +1,5 @@
 from datetime import datetime
-from cost import cost
+from cost import cost as costNorm
 import dijkstra as d
 
 import numpy as np
@@ -8,12 +8,15 @@ import scipy.interpolate
 
 res = 30
 
+def cost(frm, to):
+    return costNorm(frm.lon, frm.lat, frm.ele, to.lon, to.lat, to.ele)
+
 if __name__ == '__main__':
     start_time = datetime.now()
 
     g = d.Graph()
 
-    filename = 'data'+str(res)+'.csv'
+    filename = 'data/data'+str(res)+'.csv'
     with open(filename, 'r') as file:
         count = 0
         for line in file.readlines():
@@ -33,8 +36,8 @@ if __name__ == '__main__':
     # for v in g:
     #     print v
 
-    start = round(res/2)
-    stop = round(res**2 - res/2-5)
+    start = 880
+    stop = 138
 
     origin = g.get_vertex(start)
     target = g.get_vertex(stop)
@@ -76,7 +79,7 @@ if __name__ == '__main__':
     ys = [g.get_vertex(v).lat for v in path]
     plt.imshow(zi, vmin=z.min(), vmax=z.max(), origin='lower',
                extent=[x.min(), x.max(), y.min(), y.max()], cmap='terrain')
-    plt.plot(xs, ys, marker='o')
+    plt.plot(xs, ys)
     plt.colorbar()
 
     text = 'path cost: ' + str(target.distance) + '\n' \

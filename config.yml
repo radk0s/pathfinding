@@ -1,0 +1,5 @@
+data_file: 'data/data30.csv'
+start_lat: 49.2379666667
+start_lon: 19.9908
+end_lat: 49.1621333333
+end_lon: 20.0270666667
