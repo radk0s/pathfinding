@@ -9,7 +9,6 @@ def print_v(v):
 
 
 def cost(start_lon, start_lat, start_ele, stop_lon, stop_lat, stop_ele):
-    print start_lon, start_lat, start_ele, stop_lon, stop_lat, stop_ele
     horizontal_dist = vincenty((start_lon, start_lat), (stop_lon, stop_lat)).meters
     # elevation_dist = abs(to.ele - frm.ele)
     elevation_dist = stop_ele - start_ele if (stop_ele - start_ele > 0) else 10

@@ -1,13 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.lines as lines
 import scipy.interpolate
-from geopy.distance import vincenty
 import random
 import sys
 import yaml
 
 from cost import cost as costNorm
+import annealing
+
 
 def prepareElevationFunction(file, x, y, z):
     with open(file, 'r') as file:
@@ -48,26 +48,34 @@ def calculateTotalCost(path, elevationFn):
 
 # TODO jak punkty sa zdefiniowane w ten sposob (czyt na odwrot (lon,lat) zamiast (lat,lon)) -> 'from geopy.distance import vincenty' bedzie zle przeliczalo odleglosci!
 
-
-def generatePoints(start, end, x, y, z):
-    randomPoints = 5
+def generateRandomPoints(start, end, x, y, z, randomPoints):
     points = [start, end]
-    print start
     return points[:1] + zip(random.sample(x, randomPoints), random.sample(y, randomPoints)) + points[1:]
 
-def drawPlot(points, x, y, z, mesh, totalCost):
-    print np.array(y).min()
+def generatePoints(start, end, parts):
+    randomPoints = 0
+    points = [start, end]
+
+    diff_x = end[0] - start[0]
+    diff_y = end[1] - start[1]
+    step_x = diff_x/parts
+    step_y = diff_y/parts
+    return points[:1] + [(start[0] + step_x * i, start[1] + step_y * i) for i in range(parts)] + points[1:]
+
+def drawPlot(filename, points, x, y, z, mesh, totalCost):
     xx, yy = zip(*points)
     plt.imshow(mesh, vmin=np.array(z).min(), vmax=np.array(z).max(), origin='lower',
                extent=[np.array(x).min(), np.array(x).max(), np.array(y).min(), np.array(y).max()], cmap='terrain')
-    plt.plot(xx, yy, color='red', lw=2, marker='o')
+    plt.plot(xx, yy, color='red', lw=2)
     plt.colorbar()
 
 
     text = 'path cost: ' + str(totalCost) + '\n'
     plt.suptitle(text, fontsize=14, fontweight='bold')
+    plt.savefig(filename + '.png')
+    plt.close()
 
-    plt.show()
+    # plt.show()
 
 
 
@@ -80,11 +88,23 @@ if __name__ == "__main__":
 
     mesh, getElevation = prepareElevationFunction(config['data_file'], x, y, z)
 
-    points = generatePoints(
+    # points = generatePoints(
+    #     (config['start_lon'], config['start_lat']),
+    #     (config['end_lon'], config['end_lat']),
+    #     50)
+
+    points = generateRandomPoints(
         (config['start_lon'], config['start_lat']),
         (config['end_lon'], config['end_lat']),
-        x, y, z)
+        x, y, z, 10)
 
     pathCost = calculateTotalCost(points, getElevation)
 
-    drawPlot(points, x, y, z, mesh, pathCost)
+    drawPlot('random_path', points, x, y, z, mesh, calculateTotalCost(points, getElevation))
+    tsp = annealing.TSP(points, getElevation, calculateTotalCost)
+    tsp.steps = 5000
+    state, e = tsp.anneal()
+
+
+    drawPlot('optimized_path', state, x, y, z, mesh, calculateTotalCost(state, getElevation))
+
