@@ -4,6 +4,7 @@ import scipy.interpolate
 import random
 import sys
 import yaml
+from datetime import datetime
 
 from cost import cost as costNorm
 import annealing
@@ -61,7 +62,7 @@ def generatePoints(start, end, parts):
     step_y = diff_y/parts
     return points[:1] + [(start[0] + step_x * i, start[1] + step_y * i) for i in range(parts)] + points[1:]
 
-def drawPlot(filename, points, x, y, z, mesh, totalCost, steps):
+def drawPlot(filename, points, x, y, z, mesh, totalCost, steps, elapsed =0):
     xx, yy = zip(*points)
     plt.imshow(mesh, vmin=np.array(z).min(), vmax=np.array(z).max(), origin='lower',
                extent=[np.array(x).min(), np.array(x).max(), np.array(y).min(), np.array(y).max()], cmap='terrain')
@@ -70,7 +71,9 @@ def drawPlot(filename, points, x, y, z, mesh, totalCost, steps):
 
 
     text = 'path cost: ' + str(totalCost) + '\n' + \
-           'steps: ' + str(steps) + '\n'
+           'steps: ' + str(steps) + '\n' +\
+           'time: ' + str(elapsed)
+
     plt.suptitle(text, fontsize=14, fontweight='bold')
     plt.savefig(filename + '.png')
     plt.close()
@@ -79,32 +82,38 @@ def drawPlot(filename, points, x, y, z, mesh, totalCost, steps):
 
 
 
-if __name__ == "__main__":
+def adaptation_path(configfile):
+    start_time = datetime.now()
     config = None
-    with open(sys.argv[1], 'r') as stream:
+    with open(configfile, 'r') as stream:
         config = yaml.load(stream)
 
     steps = None
-    if len(sys.argv) > 2:
-        steps = int(sys.argv[2])
+    points = []
+    if config['steps'] != None:
+        steps = int(config['steps'])
 
     x, y, z = [], [], []
 
     mesh, getElevation = prepareElevationFunction(config['data_file'], x, y, z)
 
-    # points = generatePoints(
-    #     (config['start_lon'], config['start_lat']),
-    #     (config['end_lon'], config['end_lat']),
-    #     10)
-    #
-    points = generateRandomPoints(
-        (config['start_lon'], config['start_lat']),
-        (config['end_lon'], config['end_lat']),
-        x, y, z, 10)
+    if config['random_points'] == 1:
+        points = generateRandomPoints(
+            (config['start_lon'], config['start_lat']),
+            (config['end_lon'], config['end_lat']),
+            x, y, z, int(config['initial_points_count']))
+    else:
+        points = generatePoints(
+            (config['start_lon'], config['start_lat']),
+            (config['end_lon'], config['end_lat']),
+            int(config['initial_points_count']))
+
 
     pathCost = calculateTotalCost(points, getElevation)
 
-    drawPlot('initial_path', points, x, y, z, mesh, calculateTotalCost(points, getElevation), 0)
+    elapsed = datetime.now() - start_time
+
+    drawPlot('initial_path', points, x, y, z, mesh, calculateTotalCost(points, getElevation), 0, elapsed)
     tsp = annealing.TSP(points, getElevation, calculateTotalCost, 200,
                         np.array(x).min(), np.array(x).max(),
                         np.array(y).min(), np.array(y).max()
@@ -115,5 +124,7 @@ if __name__ == "__main__":
     tsp.copy_strategy = "slice"
     state, e = tsp.anneal()
 
-    drawPlot('optimized_path_' + (str(steps) if steps != None else 'covergence'), state, x, y, z, mesh, calculateTotalCost(state, getElevation), tsp.currentStep)
+    elapsed = datetime.now() - start_time
+
+    drawPlot('optimized_path_' + (str(steps) if steps != None else 'covergence'), state, x, y, z, mesh, calculateTotalCost(state, getElevation), tsp.currentStep, elapsed)
 

@@ -3,3 +3,6 @@ start_lon: 19.9908
 start_lat: 49.2379666667
 end_lon: 20.0270666667
 end_lat: 49.1621333333
+steps: 50000
+initial_points_count: 30
+random_points: 0
