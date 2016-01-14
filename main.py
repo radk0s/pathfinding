@@ -8,5 +8,4 @@ if __name__ == '__main__':
     stop = 138
 
     dijkstra_path = graph_path(start, stop, res)
-    print dijkstra_path
     adaptation_path('config.yml')
