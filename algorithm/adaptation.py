@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.interpolate
 import random
-import sys
+import copy
 import yaml
 from datetime import datetime
 
@@ -82,31 +82,35 @@ def drawPlot(filename, points, x, y, z, mesh, totalCost, steps, elapsed =0):
 
 
 
-def adaptation_path(configfile):
+def adaptation_path(configfile, pointsD = None):
     start_time = datetime.now()
+    points = copy.deepcopy(pointsD);
+
     config = None
     with open(configfile, 'r') as stream:
         config = yaml.load(stream)
 
     steps = None
-    points = []
+    print(points)
     if config['steps'] != None:
         steps = int(config['steps'])
 
     x, y, z = [], [], []
 
+
     mesh, getElevation = prepareElevationFunction(config['data_file'], x, y, z)
 
-    if config['random_points'] == 1:
-        points = generateRandomPoints(
-            (config['start_lon'], config['start_lat']),
-            (config['end_lon'], config['end_lat']),
-            x, y, z, int(config['initial_points_count']))
-    else:
-        points = generatePoints(
-            (config['start_lon'], config['start_lat']),
-            (config['end_lon'], config['end_lat']),
-            int(config['initial_points_count']))
+    if points == None:
+        if config['random_points'] == 1:
+            points = generateRandomPoints(
+                (config['start_lon'], config['start_lat']),
+                (config['end_lon'], config['end_lat']),
+                x, y, z, int(config['initial_points_count']))
+        else:
+            points = generatePoints(
+                (config['start_lon'], config['start_lat']),
+                (config['end_lon'], config['end_lat']),
+                int(config['initial_points_count']))
 
 
     pathCost = calculateTotalCost(points, getElevation)

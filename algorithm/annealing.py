@@ -72,5 +72,5 @@ class TSP(Annealer):
 
     def update(self, step, T, E, acceptance, improvement):
         self.currentTemp = T
-        print("Improvment: " + str(improvement) + " %")
+        print(self.currentStep, self.costFn(self.state, self.elevationFn))
     pass
