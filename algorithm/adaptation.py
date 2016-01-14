@@ -4,6 +4,7 @@ import scipy.interpolate
 import random
 import sys
 import yaml
+from datetime import datetime
 
 from cost import cost as costNorm
 import annealing
@@ -38,7 +39,7 @@ def calculateTotalCost(path, elevationFn):
     for i in xrange(len(path) - 1):
         total_cost += costNorm(path[i][0], path[i][1], elevationFn(path[i][0], path[i][1]),
                                path[i + 1][0], path[i + 1][1], elevationFn(path[i + 1][0], path[i + 1][1]))
-        print total_cost
+        # print total_cost
 
     return total_cost
 
@@ -62,7 +63,7 @@ def generatePoints(start, end, parts):
     step_y = diff_y/parts
     return points[:1] + [(start[0] + step_x * i, start[1] + step_y * i) for i in range(parts)] + points[1:]
 
-def drawPlot(filename, points, x, y, z, mesh, totalCost):
+def drawPlot(filename, points, x, y, z, mesh, totalCost, elapsed=0):
     xx, yy = zip(*points)
     plt.imshow(mesh, vmin=np.array(z).min(), vmax=np.array(z).max(), origin='lower',
                extent=[np.array(x).min(), np.array(x).max(), np.array(y).min(), np.array(y).max()], cmap='terrain')
@@ -70,7 +71,8 @@ def drawPlot(filename, points, x, y, z, mesh, totalCost):
     plt.colorbar()
 
 
-    text = 'path cost: ' + str(totalCost) + '\n'
+    text = 'path cost: ' + str(totalCost) + '\n' \
+           + 'time: ' + str(elapsed)
     plt.suptitle(text, fontsize=14, fontweight='bold')
     plt.savefig(filename + '.png')
     plt.close()
@@ -79,9 +81,10 @@ def drawPlot(filename, points, x, y, z, mesh, totalCost):
 
 
 
-if __name__ == "__main__":
+def adaptation_path(configfile):
+    start_time = datetime.now()
     config = None
-    with open(sys.argv[1], 'r') as stream:
+    with open(configfile, 'r') as stream:
         config = yaml.load(stream)
 
     x, y, z = [], [], []
@@ -100,11 +103,14 @@ if __name__ == "__main__":
 
     pathCost = calculateTotalCost(points, getElevation)
 
-    drawPlot('random_path', points, x, y, z, mesh, calculateTotalCost(points, getElevation))
+    elapsed = datetime.now() - start_time
+
+    drawPlot('random_path', points, x, y, z, mesh, calculateTotalCost(points, getElevation), elapsed)
     tsp = annealing.TSP(points, getElevation, calculateTotalCost)
     tsp.steps = 5000
     state, e = tsp.anneal()
 
+    elapsed = datetime.now() - start_time
 
-    drawPlot('optimized_path', state, x, y, z, mesh, calculateTotalCost(state, getElevation))
+    drawPlot('optimized_path', state, x, y, z, mesh, calculateTotalCost(state, getElevation), elapsed)
 

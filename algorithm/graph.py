@@ -5,18 +5,17 @@ import dijkstra as d
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.interpolate
-
-res = 30
+import os
 
 def cost(frm, to):
     return costNorm(frm.lon, frm.lat, frm.ele, to.lon, to.lat, to.ele)
 
-if __name__ == '__main__':
+def graph_path(frm, to, res):
     start_time = datetime.now()
 
     g = d.Graph()
 
-    filename = 'data/data'+str(res)+'.csv'
+    filename = os.getcwd()+'/data/data'+str(res)+'.csv'
     with open(filename, 'r') as file:
         count = 0
         for line in file.readlines():
@@ -33,13 +32,10 @@ if __name__ == '__main__':
                 if node % res != (res-1):
                     g.add_edge(node, node + 1, cost(g.get_vertex(node), g.get_vertex(node + 1)))
 
-    # for v in g:
-    #     print v
+    start = frm
+    stop = to
 
-    start = 880
-    stop = 138
-
-    origin = g.get_vertex(start)
+    # origin = g.get_vertex(start)
     target = g.get_vertex(stop)
 
     d.dijkstra(g, g.get_vertex(start))
@@ -48,11 +44,8 @@ if __name__ == '__main__':
     print 'The shortest path : %s' % (path[::-1])
     print 'total cost: ' + str(target.distance)
 
-    # for v in g:
-    #     print v
-
-    end_time = datetime.now()
-    print end_time - start_time
+    elapsed = datetime.now() - start_time
+    print elapsed
 
     x = []
     y = []
@@ -77,16 +70,20 @@ if __name__ == '__main__':
     zi = rbf(xi, yi)
     xs = [g.get_vertex(v).lon for v in path]
     ys = [g.get_vertex(v).lat for v in path]
+
+    plt.gcf().canvas.set_window_title('Dijkstra shortest path')
+
     plt.imshow(zi, vmin=z.min(), vmax=z.max(), origin='lower',
                extent=[x.min(), x.max(), y.min(), y.max()], cmap='terrain')
     plt.plot(xs, ys)
+    plt.plot(xs[-1], ys[-1], 'g^')
+    plt.plot(xs[0], ys[0], 'rs')
     plt.colorbar()
 
     text = 'path cost: ' + str(target.distance) + '\n' \
-           + 'start: (' + str(round(origin.lat, 3)) + ', ' + str(round(origin.lon, 3)) + ')' + '\n' \
-           + 'end: (' + str(round(target.lat, 3)) + ', ' + str(round(target.lon, 3)) + ')' + '\n' \
-           + 'path steps: ' + str(len(path))
+           + 'time: ' + str(elapsed)
     plt.suptitle(text, fontsize=14, fontweight='bold')
-
-    plt.show()
+    plt.savefig('graph_path.png')
+    plt.close()
+    # plt.show()
 
