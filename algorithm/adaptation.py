@@ -38,7 +38,6 @@ def calculateTotalCost(path, elevationFn):
     for i in xrange(len(path) - 1):
         total_cost += costNorm(path[i][0], path[i][1], elevationFn(path[i][0], path[i][1]),
                                path[i + 1][0], path[i + 1][1], elevationFn(path[i + 1][0], path[i + 1][1]))
-        print total_cost
 
     return total_cost
 
@@ -62,7 +61,7 @@ def generatePoints(start, end, parts):
     step_y = diff_y/parts
     return points[:1] + [(start[0] + step_x * i, start[1] + step_y * i) for i in range(parts)] + points[1:]
 
-def drawPlot(filename, points, x, y, z, mesh, totalCost):
+def drawPlot(filename, points, x, y, z, mesh, totalCost, steps):
     xx, yy = zip(*points)
     plt.imshow(mesh, vmin=np.array(z).min(), vmax=np.array(z).max(), origin='lower',
                extent=[np.array(x).min(), np.array(x).max(), np.array(y).min(), np.array(y).max()], cmap='terrain')
@@ -70,7 +69,8 @@ def drawPlot(filename, points, x, y, z, mesh, totalCost):
     plt.colorbar()
 
 
-    text = 'path cost: ' + str(totalCost) + '\n'
+    text = 'path cost: ' + str(totalCost) + '\n' + \
+           'steps: ' + str(steps) + '\n'
     plt.suptitle(text, fontsize=14, fontweight='bold')
     plt.savefig(filename + '.png')
     plt.close()
@@ -84,6 +84,10 @@ if __name__ == "__main__":
     with open(sys.argv[1], 'r') as stream:
         config = yaml.load(stream)
 
+    steps = None
+    if len(sys.argv) > 2:
+        steps = int(sys.argv[2])
+
     x, y, z = [], [], []
 
     mesh, getElevation = prepareElevationFunction(config['data_file'], x, y, z)
@@ -91,8 +95,8 @@ if __name__ == "__main__":
     # points = generatePoints(
     #     (config['start_lon'], config['start_lat']),
     #     (config['end_lon'], config['end_lat']),
-    #     50)
-
+    #     10)
+    #
     points = generateRandomPoints(
         (config['start_lon'], config['start_lat']),
         (config['end_lon'], config['end_lat']),
@@ -100,11 +104,16 @@ if __name__ == "__main__":
 
     pathCost = calculateTotalCost(points, getElevation)
 
-    drawPlot('random_path', points, x, y, z, mesh, calculateTotalCost(points, getElevation))
-    tsp = annealing.TSP(points, getElevation, calculateTotalCost)
-    tsp.steps = 5000
+    drawPlot('initial_path', points, x, y, z, mesh, calculateTotalCost(points, getElevation), 0)
+    tsp = annealing.TSP(points, getElevation, calculateTotalCost, 200,
+                        np.array(x).min(), np.array(x).max(),
+                        np.array(y).min(), np.array(y).max()
+                    )
+    if steps != None:
+        tsp.steps = steps;
+
+    tsp.copy_strategy = "slice"
     state, e = tsp.anneal()
 
-
-    drawPlot('optimized_path', state, x, y, z, mesh, calculateTotalCost(state, getElevation))
+    drawPlot('optimized_path_' + (str(steps) if steps != None else 'covergence'), state, x, y, z, mesh, calculateTotalCost(state, getElevation), tsp.currentStep)
 
