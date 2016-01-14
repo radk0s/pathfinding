@@ -87,3 +87,5 @@ def graph_path(frm, to, res):
     plt.close()
     # plt.show()
 
+    return [(g.get_vertex(v).lon, g.get_vertex(v).lat) for v in reversed(path)]
+
