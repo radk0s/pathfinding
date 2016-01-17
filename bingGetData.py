@@ -5,6 +5,8 @@ import re
 BING_KEY = '&key=AnarNEr3GQtYBpm_uOyX3gA7RLiG5fmSjJc923dpSw--bRyQ66ems66JLGdERei5'
 BING_BASE_URL = 'http://dev.virtualearth.net/REST/v1/Elevation/List?points='
 
+resolution = 45
+
 
 def getElevation(lat, lon):
     url = BING_BASE_URL + str(lat) + ',' + str(lon) + BING_KEY
@@ -23,14 +25,16 @@ if __name__ == '__main__':
     stopLat = 49.241
     stopLon = 20.086
 
-    resolution = 30
 
     latStep = (stopLat - startLat) / resolution
     lonStep = (stopLon - startLon) / resolution
     counter = 0
     geoArray = []
     points = []
-    with open('data30.csv', 'w') as file:
+
+    filename = 'data' + str(resolution) + '.csv'
+
+    with open(filename, 'w') as file:
         for i in xrange(resolution):
             for j in xrange(resolution):
                 counter += 1
